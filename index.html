@@ -18,7 +18,6 @@
       background:var(--bg);
       color:#222;
     }
-    /* Header with centered title and a right-aligned link */
     .page-header{ position:relative; display:block; margin:0 0 18px 0; }
     h2{ text-align:center; margin:10px 0; }
     .header-link{
@@ -55,6 +54,7 @@
     }
     label{display:block;margin:6px 0;}
     input[type=number]{width:90px;padding:4px;border:1px solid #ccc;border-radius:6px;}
+    input.invalid{ border:2px solid red; box-shadow:0 0 8px rgba(255,0,0,0.6); }
     button{
       padding:10px 14px;border-radius:8px;border:0;
       background:linear-gradient(90deg,var(--blue),var(--purple));
@@ -66,10 +66,8 @@
       border:1px solid var(--border);
     }
     small{color:#666;}
-   /* Two-column layout: left column = bachelors, right column = masters
-     Use full viewport width while keeping a comfortable side padding. */
-   .cols{ display:flex; gap:20px; width:100%; max-width:none; margin:0; padding:0 18px; align-items:flex-start; box-sizing:border-box; }
-   .col{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:12px; }
+    .cols{ display:flex; gap:20px; width:100%; max-width:none; margin:0; padding:0 18px; align-items:flex-start; box-sizing:border-box; }
+    .col{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:12px; }
     .rules-box{ background:white; padding:15px; border-radius:12px; border:1px solid var(--border); box-shadow:0 3px 8px rgba(0,0,0,0.05); width:100%; box-sizing:border-box; }
     .col .panel{ width:100%; box-sizing:border-box; }
   </style>
@@ -156,17 +154,36 @@ function createInputs(containerId, modules) {
 }
 
 const L5 = new Array(6).fill(0).map(()=>({credits:20}));
-const L6 = [{credits:40}].concat(new Array(4).fill(0).map(()=>({credits:20}))); // now 5 modules
+const L6 = [{credits:40}].concat(new Array(4).fill(0).map(()=>({credits:20})));
 const L7 = new Array(3).fill(0).map(()=>({credits:30})).concat(new Array(2).fill(0).map(()=>({credits:15})));
 
-// bachelors
-createInputs('b_l5', L5);
-createInputs('b_l6', L6);
-// masters
-createInputs('m_l5', L5);
-createInputs('m_l6', L6);
-createInputs('m_l7', L7);
+// create inputs
+['b_l5','b_l6','m_l5','m_l6','m_l7'].forEach(id=>{
+  const modules = id.includes('l5')? L5 : (id.includes('l6')? L6 : L7);
+  createInputs(id, modules);
+});
 
+// GPA table function
+function getGPA(mark){
+  if(!Number.isFinite(mark)) return 'N/A';
+  if(mark>75) return 4.25;
+  if(mark>=71) return 4.00;
+  if(mark>=67) return 3.75;
+  if(mark>=64) return 3.50;
+  if(mark>=61) return 3.25;
+  if(mark>=57) return 3.00;
+  if(mark>=54) return 2.75;
+  if(mark>=50) return 2.50;
+  if(mark>=48) return 2.25;
+  if(mark>=43) return 2.00;
+  if(mark>=40) return 1.50;
+  if(mark>=38) return 1.00;
+  if(mark>=35) return 0.75;
+  if(mark>=30) return 0.50;
+  return 0.0;
+}
+
+// read level input
 function readLevel(containerId){
   const container = document.getElementById(containerId);
   const inputs = container.querySelectorAll('input');
@@ -176,6 +193,7 @@ function readLevel(containerId){
   });
 }
 
+// drop worst 20 credits
 function dropWorst20(modules){
   const copy = modules.map(m=>({mark: isNaN(m.mark)? -1 : m.mark, credits:m.credits}));
   copy.sort((a,b)=> a.mark - b.mark);
@@ -189,6 +207,7 @@ function dropWorst20(modules){
   return {kept, removed, mean: totalCreditsKept? weightedSum/totalCreditsKept : NaN};
 }
 
+// classify mark
 function classify(mark){
   if(!Number.isFinite(mark)) return 'Incomplete';
   if(mark>=70) return 'First (1st)';
@@ -198,33 +217,34 @@ function classify(mark){
   return 'Fail';
 }
 
+// list modules
 function listMods(mods){ return mods.map(m=>`(${m.credits}c) ${m.mark.toFixed(2)}`).join(', '); }
 
-// GPA mapping function
-function getGPA(mark){
-  if(!Number.isFinite(mark)) return 'N/A';
-  if(mark>75) return 4.25;
-  if(mark>=71) return 4.00;
-  if(mark>=67) return 3.75;
-  if(mark>=64) return 3.50;
-  if(mark>=61) return 3.25;
-  if(mark>=57) return 3.00;
-  if(mark>=54) return 2.75;
-  if(mark>=50) return 2.50;
-  if(mark===48) return 2.25;
-  if(mark>=43) return 2.00;
-  if(mark>=40) return 1.50;
-  if(mark>=38) return 1.00;
-  if(mark>=35) return 0.75;
-  if(mark>=30) return 0.50;
-  return 0.0;
+// validate inputs real-time
+document.querySelectorAll('input[type=number]').forEach(input => {
+  input.addEventListener('input', () => {
+    const val = parseFloat(input.value);
+    if(!Number.isFinite(val) || val<0 || val>100){
+      input.classList.add('invalid');
+    } else {
+      input.classList.remove('invalid');
+    }
+  });
+});
+
+function allInputsValid(containerId) {
+  const inputs = document.getElementById(containerId).querySelectorAll('input');
+  return Array.from(inputs).every(inp => !inp.classList.contains('invalid') && inp.value !== '');
 }
 
 // ---------------- BACHELORS ----------------
 document.getElementById('calc_b').addEventListener('click',()=>{
+  if(!allInputsValid('b_l5') || !allInputsValid('b_l6')){
+    alert("Please fix invalid inputs (0–100) before calculating.");
+    return;
+  }
   const L5_b = dropWorst20(readLevel('b_l5'));
   const L6_b = dropWorst20(readLevel('b_l6'));
-
   const ruleA = L5_b.mean*0.4 + L6_b.mean*0.6;
   const ruleB = L6_b.mean;
 
@@ -246,10 +266,13 @@ document.getElementById('calc_b').addEventListener('click',()=>{
 
 // ---------------- MASTERS ----------------
 document.getElementById('calc_m').addEventListener('click',()=>{
+  if(!allInputsValid('m_l5') || !allInputsValid('m_l6') || !allInputsValid('m_l7')){
+    alert("Please fix invalid inputs (0–100) before calculating.");
+    return;
+  }
   const L5_m = dropWorst20(readLevel('m_l5'));
   const L6_m = dropWorst20(readLevel('m_l6'));
   const L7_m = dropWorst20(readLevel('m_l7'));
-
   const ruleA = 0.5*L6_m.mean + 0.5*L7_m.mean;
   const ruleB = 0.2*L5_m.mean + 0.4*L6_m.mean + 0.4*L7_m.mean;
 
@@ -268,15 +291,7 @@ document.getElementById('calc_m').addEventListener('click',()=>{
     L7 kept: ${listMods(L7_m.kept)}
   `;
 });
-
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
