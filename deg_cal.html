@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Degree Class Calculator</title>
+  <style>
+    :root {
+      --blue: #3b6cff;
+      --purple: #8a3cff;
+      --bg: #f2f4ff;
+      --card-bg: #ffffff;
+      --border: #d9ddff;
+    }
+    body{
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial;
+      margin:8px;
+      background:var(--bg);
+      color:#222;
+    }
+    /* Header with centered title and a right-aligned link */
+    .page-header{ position:relative; display:block; margin:0 0 18px 0; }
+    h2{ text-align:center; margin:10px 0; }
+    .header-link{
+      position:absolute; right:16px; top:50%; transform:translateY(-50%);
+      color:var(--blue); font-weight:700; text-decoration:none; background:transparent;
+      padding:6px 10px; border-radius:8px;
+    }
+    .container{
+      display:flex;
+      gap:20px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+    .panel{
+      flex:1 1 480px;
+      background:var(--card-bg);
+      border:2px solid var(--border);
+      border-radius:14px;
+      padding:20px;
+      box-shadow:0 4px 10px rgba(0,0,0,0.05);
+    }
+    .panel h3{
+      margin-top:0;
+    }
+    .masters h3{ color:var(--purple); }
+    .bachelors h3{ color:var(--blue); }
+
+    .level{
+      border:1px solid var(--border);
+      padding:12px;
+      margin:10px 0;
+      border-radius:10px;
+      background:#fafaff;
+    }
+    label{display:block;margin:6px 0;}
+    input[type=number]{width:90px;padding:4px;border:1px solid #ccc;border-radius:6px;}
+    button{
+      padding:10px 14px;border-radius:8px;border:0;
+      background:linear-gradient(90deg,var(--blue),var(--purple));
+      color:white;font-weight:600;font-size:15px;margin-top:10px;
+      cursor:pointer;
+    }
+    .result{
+      background:#f9f9ff;padding:10px;border-radius:10px;margin-top:10px;
+      border:1px solid var(--border);
+    }
+    small{color:#666;}
+   /* Two-column layout: left column = bachelors, right column = masters
+     Use full viewport width while keeping a comfortable side padding. */
+   .cols{ display:flex; gap:20px; width:100%; max-width:none; margin:0; padding:0 18px; align-items:flex-start; box-sizing:border-box; }
+   .col{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:12px; }
+    .rules-box{ background:white; padding:15px; border-radius:12px; border:1px solid var(--border); box-shadow:0 3px 8px rgba(0,0,0,0.05); width:100%; box-sizing:border-box; }
+    .col .panel{ width:100%; box-sizing:border-box; }
+  </style>
+</head>
+<body>
+
+<header class="page-header">
+  <h2>Degree Classification Calculator</h2>
+  <a class="header-link" href="Assessment Regulations 25-26.pdf" target="_blank">📘 Assessment Regulations 25-26 (PDF)</a>
+</header>
+
+<div class="cols">
+  <div class="col left-col">
+    <div class="rules-box">
+      <h3 style="color:var(--blue);">Bachelors Rules</h3>
+      <p><strong>Rule A:</strong> Weighted mean of all relevant credits at Level 5 and Level 6 in a <strong>40:60</strong> ratio, after discounting the worst <strong>20 credits</strong> at each level.</p>
+      <p><strong>Rule B:</strong> Weighted mean of all relevant credits at <strong>Level 6 only</strong>, after discounting the worst <strong>20 credits</strong> at Level 6.</p>
+    </div>
+
+    <div class="panel bachelors">
+      <h3>Bachelors Classification (Levels 5–6)</h3>
+
+      <div class="level">
+        <h4>Level 5 - 6 modules (20 credits each)</h4>
+        <div id="b_l5"></div>
+      </div>
+
+      <div class="level">
+        <h4>Level 6 - 5 modules (1×40 credits, 4×20 credits)</h4>
+        <div id="b_l6"></div>
+      </div>
+
+      <button id="calc_b">Calculate Bachelors Classification</button>
+      <div id="out_b" class="result" style="display:none"></div>
+    </div>
+  </div>
+
+  <div class="col right-col">
+    <div class="rules-box">
+      <h3 style="color:var(--purple);">Masters Rules</h3>
+      <p><strong>Rule A:</strong> Weighted mean of all relevant credits at Level 6 and Level 7 in a <strong>50:50</strong> ratio, after discounting the worst <strong>20 credits</strong> at both levels.</p>
+      <p><strong>Rule B:</strong> Weighted mean of all relevant credits at Levels 5, 6, and 7 in a <strong>20:40:40</strong> ratio, after discounting the worst <strong>20 credits</strong> at each level.</p>
+    </div>
+
+    <div class="panel masters">
+      <h3>Masters Classification (Levels 5–7)</h3>
+
+      <div class="level">
+        <h4>Level 5 - 6 modules (20 credits each)</h4>
+        <div id="m_l5"></div>
+      </div>
+
+      <div class="level">
+        <h4>Level 6 - 5 modules (1×40 credits, 4×20 credits)</h4>
+        <div id="m_l6"></div>
+      </div>
+
+      <div class="level">
+        <h4>Level 7 - 5 modules (3×30 credits, 2×15 credits)</h4>
+        <div id="m_l7"></div>
+      </div>
+
+      <button id="calc_m">Calculate Masters Classification</button>
+      <div id="out_m" class="result" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function createInputs(containerId, modules) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  modules.forEach((mod, idx) => {
+    const wrapper = document.createElement('div');
+    const label = document.createElement('label');
+    label.innerHTML = `Module ${idx+1} - ${mod.credits} credits:`;
+    const inp = document.createElement('input');
+    inp.type = 'number'; inp.min = 0; inp.max = 100; inp.step = '0.01'; inp.dataset.credits = mod.credits;
+    wrapper.appendChild(label);
+    wrapper.appendChild(inp);
+    container.appendChild(wrapper);
+  });
+}
+
+const L5 = new Array(6).fill(0).map(()=>({credits:20}));
+const L6 = [{credits:40}].concat(new Array(4).fill(0).map(()=>({credits:20}))); // now 5 modules
+const L7 = new Array(3).fill(0).map(()=>({credits:30})).concat(new Array(2).fill(0).map(()=>({credits:15})));
+
+// bachelors
+createInputs('b_l5', L5);
+createInputs('b_l6', L6);
+// masters
+createInputs('m_l5', L5);
+createInputs('m_l6', L6);
+createInputs('m_l7', L7);
+
+function readLevel(containerId){
+  const container = document.getElementById(containerId);
+  const inputs = container.querySelectorAll('input');
+  return Array.from(inputs).map(inp => {
+    const val = parseFloat(inp.value);
+    return {mark: Number.isFinite(val)? val : NaN, credits: Number(inp.dataset.credits)};
+  });
+}
+
+function dropWorst20(modules){
+  const copy = modules.map(m=>({mark: isNaN(m.mark)? -1 : m.mark, credits:m.credits}));
+  copy.sort((a,b)=> a.mark - b.mark);
+  let removed = [], removedCredits=0;
+  for(const m of copy){
+    if(removedCredits < 20){ removed.push(m); removedCredits+=m.credits; }
+  }
+  const kept = copy.slice(removed.length);
+  const totalCreditsKept = kept.reduce((s,m)=> s+m.credits,0);
+  const weightedSum = kept.reduce((s,m)=> s+(m.mark*m.credits),0);
+  return {kept, removed, mean: totalCreditsKept? weightedSum/totalCreditsKept : NaN};
+}
+
+function classify(mark){
+  if(!Number.isFinite(mark)) return 'Incomplete';
+  if(mark>=70) return 'First (1st)';
+  if(mark>=60) return 'Upper Second (2:1)';
+  if(mark>=50) return 'Lower Second (2:2)';
+  if(mark>=40) return 'Third';
+  return 'Fail';
+}
+
+function listMods(mods){ return mods.map(m=>`(${m.credits}c) ${m.mark.toFixed(2)}`).join(', '); }
+
+// ---------------- BACHELORS ----------------
+document.getElementById('calc_b').addEventListener('click',()=>{
+  const L5_b = dropWorst20(readLevel('b_l5'));
+  const L6_b = dropWorst20(readLevel('b_l6'));
+
+  // rule a: 40:60
+  const ruleA = L5_b.mean*0.4 + L6_b.mean*0.6;
+
+  // rule b: level 6 only
+  const ruleB = L6_b.mean;
+
+  const out = document.getElementById('out_b');
+  out.style.display='block';
+  out.innerHTML = `
+    <h4>Results</h4>
+    <strong>Rule A (L5:L6 = 40:60)</strong><br>
+    Combined = ${ruleA.toFixed(2)} - <strong>${classify(ruleA)}</strong><br><br>
+
+    <strong>Rule B (Level 6 only)</strong><br>
+    Combined = ${ruleB.toFixed(2)} - <strong>${classify(ruleB)}</strong><br><hr>
+
+    <strong>Details</strong><br>
+    L5 kept: ${listMods(L5_b.kept)}<br>
+    L6 kept: ${listMods(L6_b.kept)}
+  `;
+});
+
+// ---------------- MASTERS ----------------
+document.getElementById('calc_m').addEventListener('click',()=>{
+  const L5_m = dropWorst20(readLevel('m_l5'));
+  const L6_m = dropWorst20(readLevel('m_l6'));
+  const L7_m = dropWorst20(readLevel('m_l7'));
+
+  // masters rule a (L6:L7 = 50:50)
+  const ruleA = 0.5*L6_m.mean + 0.5*L7_m.mean;
+
+  // masters rule b (L5:L6:L7 = 20:40:40)
+  const ruleB = 0.2*L5_m.mean + 0.4*L6_m.mean + 0.4*L7_m.mean;
+
+  const out = document.getElementById('out_m');
+  out.style.display='block';
+  out.innerHTML = `
+    <h4>Results</h4>
+    <strong>Rule A (L6:L7 = 50:50)</strong><br>
+    Combined = ${ruleA.toFixed(2)} - <strong>${classify(ruleA)}</strong><br><br>
+
+    <strong>Rule B (L5:L6:L7 = 20:40:40)</strong><br>
+    Combined = ${ruleB.toFixed(2)} - <strong>${classify(ruleB)}</strong><br><hr>
+
+    L5 kept: ${listMods(L5_m.kept)}<br>
+    L6 kept: ${listMods(L6_m.kept)}<br>
+    L7 kept: ${listMods(L7_m.kept)}
+  `;
+});
+</script>
+
+</body>
+</html>
