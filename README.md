@@ -36,7 +36,7 @@ Quick Launch Link: [UoP Degree Classification Calculator](https://shreddereatsch
 
 ## PDF Reference
 
-The rules are based on the official [UoP Assessment Regulations 25-26](Assessment%20Regulations%2025-26.pdf).
+The rules are based on the official [UoP Assessment Regulations 25-26](Assessment%20Regulations%2025-26.pdf)
 
 ---
 
