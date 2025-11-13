@@ -21,6 +21,7 @@ Quick Launch Link: [UoP Degree Classification Calculator](https://shreddereatsch
 - Interactive module input for each level.
 - Automatically drops the worst 20 credits per level.
 - Shows detailed results, including module marks kept and removed.
+- GPA is also calculated.
 
 ---
 
