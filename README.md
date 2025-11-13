@@ -2,7 +2,7 @@
 
 **Up to date as of 2025**  
 
-This interactive calculator allows students of the University of Portsmouth (UoP) to compute their **Bachelors and Masters degree classifications** based on the latest rules effective from 2025.
+This interactive calculator allows students of the University of Portsmouth (UoP) to compute their **Bachelors and Integrated Masters degree classifications** based on the latest rules effective from 2025.
 
 ---
 
