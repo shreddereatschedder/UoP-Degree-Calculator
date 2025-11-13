@@ -6,7 +6,7 @@ This interactive calculator allows students of the University of Portsmouth (UoP
 
 ---
 
-Quick Launch Link: [https://shreddereatschedder.github.io/UoP-Degree-Calculator/]
+Quick Launch Link: ([https://shreddereatschedder.github.io/UoP-Degree-Calculator/])
 
 ## Features
 
