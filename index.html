@@ -207,15 +207,32 @@ function classify(mark){
 
 function listMods(mods){ return mods.map(m=>`(${m.credits}c) ${m.mark.toFixed(2)}`).join(', '); }
 
+// GPA mapping function
+function getGPA(mark){
+  if(!Number.isFinite(mark)) return 'N/A';
+  if(mark>75) return 4.25;
+  if(mark>=71) return 4.00;
+  if(mark>=67) return 3.75;
+  if(mark>=64) return 3.50;
+  if(mark>=61) return 3.25;
+  if(mark>=57) return 3.00;
+  if(mark>=54) return 2.75;
+  if(mark>=50) return 2.50;
+  if(mark===48) return 2.25;
+  if(mark>=43) return 2.00;
+  if(mark>=40) return 1.50;
+  if(mark>=38) return 1.00;
+  if(mark>=35) return 0.75;
+  if(mark>=30) return 0.50;
+  return 0.0;
+}
+
 // ---------------- BACHELORS ----------------
 document.getElementById('calc_b').addEventListener('click',()=>{
   const L5_b = dropWorst20(readLevel('b_l5'));
   const L6_b = dropWorst20(readLevel('b_l6'));
 
-  // rule a: 40:60
   const ruleA = L5_b.mean*0.4 + L6_b.mean*0.6;
-
-  // rule b: level 6 only
   const ruleB = L6_b.mean;
 
   const out = document.getElementById('out_b');
@@ -223,10 +240,10 @@ document.getElementById('calc_b').addEventListener('click',()=>{
   out.innerHTML = `
     <h4>Results</h4>
     <strong>Rule A (L5:L6 = 40:60)</strong><br>
-    Combined = ${ruleA.toFixed(2)} - <strong>${classify(ruleA)}</strong><br><br>
+    Combined = ${ruleA.toFixed(2)} - <strong>${classify(ruleA)}</strong> - GPA: <strong>${getGPA(ruleA)}</strong><br><br>
 
     <strong>Rule B (Level 6 only)</strong><br>
-    Combined = ${ruleB.toFixed(2)} - <strong>${classify(ruleB)}</strong><br><hr>
+    Combined = ${ruleB.toFixed(2)} - <strong>${classify(ruleB)}</strong> - GPA: <strong>${getGPA(ruleB)}</strong><br><hr>
 
     <strong>Details</strong><br>
     L5 kept: ${listMods(L5_b.kept)}<br>
@@ -240,10 +257,7 @@ document.getElementById('calc_m').addEventListener('click',()=>{
   const L6_m = dropWorst20(readLevel('m_l6'));
   const L7_m = dropWorst20(readLevel('m_l7'));
 
-  // masters rule a (L6:L7 = 50:50)
   const ruleA = 0.5*L6_m.mean + 0.5*L7_m.mean;
-
-  // masters rule b (L5:L6:L7 = 20:40:40)
   const ruleB = 0.2*L5_m.mean + 0.4*L6_m.mean + 0.4*L7_m.mean;
 
   const out = document.getElementById('out_m');
@@ -251,20 +265,22 @@ document.getElementById('calc_m').addEventListener('click',()=>{
   out.innerHTML = `
     <h4>Results</h4>
     <strong>Rule A (L6:L7 = 50:50)</strong><br>
-    Combined = ${ruleA.toFixed(2)} - <strong>${classify(ruleA)}</strong><br><br>
+    Combined = ${ruleA.toFixed(2)} - <strong>${classify(ruleA)}</strong> - GPA: <strong>${getGPA(ruleA)}</strong><br><br>
 
     <strong>Rule B (L5:L6:L7 = 20:40:40)</strong><br>
-    Combined = ${ruleB.toFixed(2)} - <strong>${classify(ruleB)}</strong><br><hr>
+    Combined = ${ruleB.toFixed(2)} - <strong>${classify(ruleB)}</strong> - GPA: <strong>${getGPA(ruleB)}</strong><br><hr>
 
     L5 kept: ${listMods(L5_m.kept)}<br>
     L6 kept: ${listMods(L6_m.kept)}<br>
     L7 kept: ${listMods(L7_m.kept)}
   `;
 });
+
 </script>
 
 </body>
 </html>
+
 
 
 
